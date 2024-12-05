@@ -1,0 +1,11 @@
+Model Information:
+* title:	Head (Lee Perry Smith)
+* source:	https://sketchfab.com/3d-models/head-lee-perry-smith-4d07eb2030db4406bc7eee971d1d3a97
+* author:	Paul (Sketchfab) (https://sketchfab.com/paul_sketch)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Head (Lee Perry Smith)" (https://sketchfab.com/3d-models/head-lee-perry-smith-4d07eb2030db4406bc7eee971d1d3a97) by Paul (Sketchfab) (https://sketchfab.com/paul_sketch) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

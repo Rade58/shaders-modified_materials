@@ -10,9 +10,9 @@ import { GLTFLoader, RGBELoader } from "three/examples/jsm/Addons.js";
 // geometries and materials
 // we will also remove model we loaded
 // and we will use new model called:
-//
+// "head_lee_perry_smith"
 // we downloaded from here:
-//
+//                            https://sketchfab.com/feed
 // ------------ gui -------------------
 /**
  * @description Debug UI - lil-ui
@@ -167,10 +167,12 @@ if (canvas) {
 
       scene.background = environmentMap;
 
-      gltfLoader.load("/models/FlightHelmet/glTF/FlightHelmet.gltf", (gltf) => {
+      // so instead of helmet we will load "lee perry-smith head"
+      // gltfLoader.load("/models/FlightHelmet/glTF/FlightHelmet.gltf", (gltf) => {
+      gltfLoader.load("/models/head_lee_perry_smith/scene.gltf", (gltf) => {
         console.log("model loaded");
         gltf.scene.scale.setScalar(10);
-        gltf.scene.position.y = -4;
+        // gltf.scene.position.y = -4;
 
         gui
           .add(parameters, "rotate model")
