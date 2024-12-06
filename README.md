@@ -20,3 +20,13 @@ So we will create and twist MeshDepthMaterial, better to say we will override it
 for lesson 8:
 The normal are data associated with the vertices that tell in which direction is the outside to be used for lights, shadows, reflection and stuff like that
 We will also rotate the normals
+
+# Going further
+
+Add some tweaks to gui
+Move the shaders to different files
+Test other animation formulas
+
+```
+float angle = (sin(position.y + uTime)) * 0.4;
+```
