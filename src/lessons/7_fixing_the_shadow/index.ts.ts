@@ -31,6 +31,17 @@ import { GLTFLoader, RGBELoader } from "three/examples/jsm/Addons.js";
 // we cannot access it it easily but we ca noverride it
 // with property `customDepthMaterial`
 
+// I am going to crete new MeshDepthMaterial and I'm going
+// to name it `shadowMeshDepthMaterial`
+// and we assign that material like this
+//    child.customDepthMaterial = shadowMeshDepthMaterial;
+
+// and now we can set for the depth material
+//  the same shader code, with all overrides we did
+//  set before for standard material
+
+// so we need to define onBeforeCompile hook to the depth material
+
 // ------------ gui -------------------
 /**
  * @description Debug UI - lil-ui
@@ -132,6 +143,89 @@ if (canvas) {
           // shadows
           child.castShadow = true;
           child.receiveShadow = true;
+
+          // ***************************************************
+          // ***************************************************
+          // I'm going to create depthMaterial here:
+          const shadowMeshDepthMaterial = new THREE.MeshDepthMaterial({
+            // this propery is "hack" to save more data
+            // it would break without it I think
+            depthPacking: THREE.RGBADepthPacking,
+          });
+          //
+          // trying this will produce some colors
+          // (author of the workshop just tried this)
+          // not using this just showing brefly
+          // child.material = shadowMeshDepthMaterial;
+
+          // what we actuall want is this
+          child.customDepthMaterial = shadowMeshDepthMaterial;
+
+          // and we want to define onBeforeCompile
+          // just like we did in previous lessons
+          // for `child.material`
+          child.customDepthMaterial.onBeforeCompile = (shader) => {
+            // console.log({ shader });
+
+            // we can now do this:
+            shader.uniforms["uTime"] = customUniforms.uTime;
+            //
+
+            shader.vertexShader = shader.vertexShader.replace(
+              "#include <common>",
+              /* glsl */ `
+              
+              #include <common>
+
+
+              // using 
+              uniform float uTime;
+
+
+              mat2 get2dRotateMatrix(float _angle){
+                return mat2(cos(_angle), - sin(_angle), sin(_angle), cos(_angle));
+              }
+
+              `
+            );
+
+            //
+
+            shader.vertexShader = shader.vertexShader.replace(
+              "#include <begin_vertex>",
+
+              /* glsl */ `
+              
+              #include <begin_vertex>
+
+              // my code
+              // float angle = position.z *  4.0 * cos(uTime * 0.2);
+              // mat2 rotateMatrix = get2dRotateMatrix(angle);
+              // transformed.xy = rotateMatrix * transformed.xy;
+              
+              // code of the author of the workshop
+                //  float angle = (position.y + uTime) * 0.9;
+                //  mat2 rotateMatrix = get2dRotateMatrix(angle);
+                //  transformed.xz = rotateMatrix * transformed.xz;
+
+
+              // again my code, I tried something different
+
+
+              float angle = position.z *  4.0 * cos(uTime * 0.1) * 15.0;
+              mat2 rotateMatrix = get2dRotateMatrix(angle);
+              transformed.xy = rotateMatrix * transformed.xy;
+              
+
+              `
+            );
+          };
+
+          // ***************************************************
+          // ***************************************************
+
+          // This is what we did before above code in previous lessons
+          // just pointing that out
           // ***************************************************
           // ***************************************************
           // ---------------------------------------------------
@@ -304,10 +398,11 @@ if (canvas) {
   );
 
   // plane.rotation.y = Math.PI;
-  // plane.position.y = 0;
+  plane.position.y = -2;
   plane.position.z = -10;
   // plane.position.x = -5;
 
+  // plane.castShadow = true;
   plane.receiveShadow = true;
   scene.add(plane);
 
@@ -342,6 +437,8 @@ if (canvas) {
   scene.add(directionalLightCameraHelper);
 
   gui.add(directionalLight, "castShadow").name("direct light cast shadow");
+
+  directionalLight.intensity = 3;
 
   gui
     .add(directionalLight, "intensity")
