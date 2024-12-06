@@ -153,14 +153,24 @@ if (canvas) {
               
               #include <begin_vertex>
 
-              
-              float angle = position.z *  3.0 * cos(uTime);
-
+              // this is waht I did to move vertice
+              // to twist model over z axis
+              float angle = position.z *  4.0 * cos(uTime * 0.2);
               mat2 rotateMatrix = get2dRotateMatrix(angle);
-
-
               transformed.xy = rotateMatrix * transformed.xy;
               
+              // but author of the workshop is doing something else
+              // he is using other coordinates
+
+              // don't know why but whith this math I can't really
+              // accomplish what is intended
+              // I think I downloaded model from the different
+              // place from the workshop outhor
+              // so I'll use my math instead
+              //    float angle = (position.y + uTime) * 0.9;
+              //    mat2 rotateMatrix = get2dRotateMatrix(angle);
+              //    transformed.xz = rotateMatrix * transformed.xz;
+
               `
             );
           };
