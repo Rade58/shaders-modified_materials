@@ -7,6 +7,59 @@ import { GLTFLoader, RGBELoader } from "three/examples/jsm/Addons.js";
 // ---------- onBeforeCompile hook :
 //                       adding content to vertex shader ----------
 //
+// we will use `#include ...` to inject code using native javascript
+// `replace` method
+// we need to understand the code
+
+// we can go to : node_modules/three/src/renderers/shaders/
+// folder, there we can find two folders: `ShaderLib/` folder and
+// `ShaderChunkFolder`
+
+// in ShaderLib/ folder shaders are grouped by material and both vertex
+//  and fragment will be in a same file of the mentioned material
+
+// rember how we were looking at points material shaders:
+// node_modules/three/src/renderers/shaders/ShaderLib/points.glsl.js
+// in previous workshop
+
+// we can look at it again
+// There you will figure out that `#include <>` synatax
+// actually include chunks: `#include <name of the chunk>`
+// a chunk that is located in `ShaderChunk/` folder
+
+// we found `#include <begin_vertex>` which we will try to replace
+// with our own vertex shader we will inline in a template literal
+
+// we will do this in onBeforeCompile hook as you know
+
+// but first we need to go to
+// node_modules/three/src/renderers/shaders/ShaderLib/meshphysical.glsl.js
+// try to read some code of the vertex shader
+// look for includes and by their names you can easyly conclude
+// what are they used for
+
+// you will se on several palaces a `#include <begin_vertex>`
+
+// so go to:
+//      node_modules/three/src/renderers/shaders/ShaderChunk/begin_vertex.glsl.js
+// and there you will see:
+/* 
+      export default `
+      vec3 transformed = vec3( position );
+
+      #ifdef USE_ALPHAHASH
+
+        vPosition = vec3( position );
+
+      #endif
+`;
+ */
+
+// so we saw this: `vec3 transformed = vec3( position );`
+
+// what we are going to do is to change `transformed`
+// variable in our shader code, we can play with it
+
 // ----------------------------------------------------------------
 // ------------ gui -------------------
 /**
@@ -103,15 +156,64 @@ if (canvas) {
           // shadows
           child.castShadow = true;
           child.receiveShadow = true;
+          // ***************************************************
+          // ***************************************************
+          // ---------------------------------------------------
+          // ---------------------------------------------------
+          // ---------------------------------------------------
 
-          // adding onBeforeCompile
-          // and loging vertex shader
-          child.material.onBeforeCompile = ({
-            vertexShader,
-            fragmentShader,
-          }) => {
-            console.log({ vertexShader, fragmentShader });
+          // don't make a mistake and restructure,
+          // do like this
+          child.material.onBeforeCompile = (shader) => {
+            // since replace makes a new string
+            // we must reassign it
+            shader.vertexShader = shader.vertexShader.replace(
+              "#include <begin_vertex>",
+              // if you provide empty replacement string
+              // you'll get an error
+              // and as we develop you can replace it
+              // with a same thing like this
+              //      "#include <begin_vertex>"
+              // it will work because you are replacing it with a same thing
+
+              // I also tried to copy a code we found in begin_vertex,
+              // and use it as a replacemnt string
+              // and it worked
+
+              // but it is better to keep
+              // on the beggining of template literal
+              // and you can comment it out
+              // this also works
+
+              /* glsl */ `
+              #include <begin_vertex>
+              
+              // we don't need to use all of this code in
+              // here which I originally intended
+               
+              // vec3 transformed = vec3( position );
+              // #ifdef USE_ALPHAHASH
+              //    vPosition = vec3( position );
+              // #endif
+
+              // instead of that let's try to move
+              // vertices
+
+              transformed.y += 3.0;
+
+              // an acutally as we saved
+              // entire model changed position
+              // otr to be precise all of its vertices
+
+              `
+            );
           };
+
+          // ---------------------------------------------------
+          // ---------------------------------------------------
+          // ---------------------------------------------------
+          // ***************************************************
+          // ***************************************************
         }
       }
     });
@@ -152,7 +254,8 @@ if (canvas) {
     0.1,
     100
   );
-  camera.position.set(4, 1, -4);
+  // camera.position.set(4, 1, -4);
+  camera.position.set(1, 1, 4);
   scene.add(camera);
 
   //------------------------------------------------
