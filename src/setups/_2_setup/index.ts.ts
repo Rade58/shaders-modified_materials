@@ -62,7 +62,7 @@ if (canvas) {
 
   const rgbeLoader = new RGBELoader();
 
-  const textureLoader = new THREE.TextureLoader();
+  // const textureLoader = new THREE.TextureLoader();
 
   // -------------------------------------------------------------------
   // -------------------------------------------------------------------
@@ -336,22 +336,6 @@ if (canvas) {
   );
   scene.background = environmentMap; 
   */
-
-  // don't want torus knot in this scene so I don't want any
-  // gui for it
-  /* gui
-    .add(parameters, "envMapIntensity for material of torusKnot")
-    .min(1)
-    .max(10)
-    .step(0.001)
-    .onChange((val: number) => {
-      // console.log({ val });
-
-      torusKnot.material.envMapIntensity = val;
-      torusKnot.material.needsUpdate = true;
-
-      // renderer.render(scene, camera); // don't need to do this
-    }); */
 
   // ----------------------------------------------
   // ----------------------------------------------

@@ -4,15 +4,10 @@ import GUI from "lil-gui";
 import { OrbitControls } from "three/examples/jsm/Addons.js";
 import { GLTFLoader, RGBELoader } from "three/examples/jsm/Addons.js";
 
-// We are using the scene from this repo
-// https://github.com/Rade58/advanced_threejs_realistic_render
-// but we will remove wall and floor meshes and their corresponfing
-// geometries and materials
-// we will also remove model we loaded
-// and we will use new model called:
-// "head_lee_perry_smith"
-// we downloaded from here:
-//                            https://sketchfab.com/feed
+// ---------- onBeforeCompile hook :
+//                       adding content to vertex shader ----------
+//
+// ----------------------------------------------------------------
 // ------------ gui -------------------
 /**
  * @description Debug UI - lil-ui
@@ -62,7 +57,7 @@ if (canvas) {
 
   const rgbeLoader = new RGBELoader();
 
-  const textureLoader = new THREE.TextureLoader();
+  // const textureLoader = new THREE.TextureLoader();
 
   // -------------------------------------------------------------------
   // -------------------------------------------------------------------
@@ -98,8 +93,8 @@ if (canvas) {
     scene.traverse((child) => {
       if (child instanceof THREE.Mesh) {
         if (
-          child.material instanceof THREE.MeshStandardMaterial &&
-          !(child.geometry instanceof THREE.TorusKnotGeometry)
+          child.material instanceof THREE.MeshStandardMaterial
+          // && !(child.geometry instanceof THREE.TorusKnotGeometry)
         ) {
           child.material.envMap = envMap;
           child.material.envMapIntensity =
@@ -108,6 +103,15 @@ if (canvas) {
           // shadows
           child.castShadow = true;
           child.receiveShadow = true;
+
+          // adding onBeforeCompile
+          // and loging vertex shader
+          child.material.onBeforeCompile = ({
+            vertexShader,
+            fragmentShader,
+          }) => {
+            console.log({ vertexShader, fragmentShader });
+          };
         }
       }
     });
@@ -183,6 +187,8 @@ if (canvas) {
           .max(2);
 
         scene.add(gltf.scene);
+
+        // console.log({ gltf });
 
         setEnvironmentMapForMaterialsOfModel(environmentMap);
       });
