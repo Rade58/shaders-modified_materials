@@ -4,18 +4,33 @@ import GUI from "lil-gui";
 import { OrbitControls } from "three/examples/jsm/Addons.js";
 import { GLTFLoader, RGBELoader } from "three/examples/jsm/Addons.js";
 
-// ---------------- using uniforms differently -----------------------------
+// ---------------- Fixing the shadow -----------------------------
 
-// we are just modifying how we will use uniform uTime
-// from previous lesson
+// Author of the workshop had to fix the shadow
 
-// instead of assigning entire "modelShader object" to some outher variable
-// we are going to keep just a uniform value in outhe object
-// so we can refrence it inside bot onBeforeCompile and from tick
-// anfd it will be allowed since we are using outer object
+// also when he was moving vertices with vertex shader like we did in previos
+// lessons, his material looked bad, an amount of black color
+// was visible
+// I don't know why I didn't have these problems
+// maybe he downloaded model from a different place
 
-// For you to easier find the code, search for "modelShader" variable
-// and how we use it
+// but before everything else let's put a plane behind the head
+// I did that and I moved directional camera so the shadow of the
+// model can be visible on the plane
+// don't forget to set `receiveShadow` to true, on the plane
+
+// shadow will be visible on the plane, but as our head deforms
+// as heads vertices moves to twist the model
+// **the shadow casted on the plane is always the same, and
+// shadow is the shadow of the head but it doesn't look deformed**
+//
+
+// --------------------------------------------------------
+// So the problem is `MeshDepthMaterial`
+// He is the one responsible why shadow isn't "twisting"
+// we cannot access it it easily but we ca noverride it
+// with property `customDepthMaterial`
+
 // ------------ gui -------------------
 /**
  * @description Debug UI - lil-ui
@@ -97,10 +112,6 @@ if (canvas) {
 
   //
 
-  // we won't be uing this
-  // let modelShader: THREE.WebGLProgramParametersWithUniforms | null = null;
-  //
-  // we wil put uniforms uTime in separate object
   const customUniforms = {
     uTime: {
       value: 0,
@@ -128,11 +139,6 @@ if (canvas) {
           // ---------------------------------------------------
 
           child.material.onBeforeCompile = (shader) => {
-            // and instead of this
-            // modelShader = shader;
-            // and this
-            // shader.uniforms["uTime"] = { value: 0 };
-            // we will do it like this
             shader.uniforms["uTime"] = customUniforms.uTime;
             //
 
@@ -164,14 +170,23 @@ if (canvas) {
               #include <begin_vertex>
 
               // my code
-              float angle = position.z *  4.0 * cos(uTime * 0.2);
+              // float angle = position.z *  4.0 * cos(uTime * 0.2);
+              // mat2 rotateMatrix = get2dRotateMatrix(angle);
+              // transformed.xy = rotateMatrix * transformed.xy;
+              
+              // code of the author of the workshop
+                //  float angle = (position.y + uTime) * 0.9;
+                //  mat2 rotateMatrix = get2dRotateMatrix(angle);
+                //  transformed.xz = rotateMatrix * transformed.xz;
+
+
+              // again my code, I tried something different
+
+
+              float angle = position.z *  4.0 * cos(uTime * 0.1) * 15.0;
               mat2 rotateMatrix = get2dRotateMatrix(angle);
               transformed.xy = rotateMatrix * transformed.xy;
               
-              // code of the author of the workshop
-              //    float angle = (position.y + uTime) * 0.9;
-              //    mat2 rotateMatrix = get2dRotateMatrix(angle);
-              //    transformed.xz = rotateMatrix * transformed.xz;
 
               `
             );
@@ -283,6 +298,19 @@ if (canvas) {
   // ----------------------------------------------
   // ----------------------------------------------
 
+  const plane = new THREE.Mesh(
+    new THREE.PlaneGeometry(15, 15, 15),
+    new THREE.MeshStandardMaterial()
+  );
+
+  // plane.rotation.y = Math.PI;
+  // plane.position.y = 0;
+  plane.position.z = -10;
+  // plane.position.x = -5;
+
+  plane.receiveShadow = true;
+  scene.add(plane);
+
   // -------------------------------------------------------------
   // -------------------------------------------------------------
   // ------------------------- LIGHTS ----------------------------
@@ -292,11 +320,11 @@ if (canvas) {
    * @description Directional light
    */
   const directionalLight = new THREE.DirectionalLight("#ffffff", 1);
-  directionalLight.position.set(-4, 6.5, 2.5);
+  directionalLight.position.set(0.1, 3.0, 4.8);
   scene.add(directionalLight);
 
   // add this before adding helper
-  directionalLight.shadow.camera.far = 15;
+  directionalLight.shadow.camera.far = 20;
 
   directionalLight.shadow.mapSize.set(1024, 1024);
 
@@ -304,7 +332,7 @@ if (canvas) {
     directionalLight.shadow.camera
   );
 
-  directionalLightCameraHelper.visible = false;
+  // directionalLightCameraHelper.visible = false;
 
   directionalLight.castShadow = true;
 
@@ -313,7 +341,7 @@ if (canvas) {
 
   scene.add(directionalLightCameraHelper);
 
-  gui.add(directionalLight, "castShadow");
+  gui.add(directionalLight, "castShadow").name("direct light cast shadow");
 
   gui
     .add(directionalLight, "intensity")
@@ -546,11 +574,6 @@ if (canvas) {
   function tick() {
     const elapsed = clock.getElapsedTime();
 
-    // instead of this
-    /* if (modelShader) {
-      modelShader.uniforms["uTime"].value = elapsed;
-    } */
-    // we do it like this
     customUniforms.uTime.value = elapsed;
 
     // for dumping to work
